@@ -7,6 +7,24 @@ import pathlib
 import shutil
 
 
+def rename_duplicate(path):
+    print("Duplicate found of: \"" + path.name + "\"")
+    new_path_name = path.name
+    if len(path.name) > 1 and path.name[0] == "(":
+        try:
+            number = int(path.name[1])
+            if number == 9:
+                new_path_name = "(1)" + path.name
+            else:
+                new_path_name = "(" + str(number + 1) + path.name[2:]
+        except ValueError:
+            pass
+    else:
+        new_path_name = "(1)" + path.name
+    print("Creating: \"" + new_path_name + "\"")
+    return new_path_name
+
+
 def is_ignored(path, depth):
     if path.name.startswith('.'):
         # I don't know if this is a bug or a feature,
@@ -23,17 +41,20 @@ def do_folder(folder_path, output_dir, depth, preservation_depth):
     for item in os.scandir(folder_path):
         if not is_ignored(item, depth):
             print("Item \"" + item.name + "\" found at depth", depth)
+            output_item_name = item.name
+            while os.path.exists(os.path.join(output_dir, output_item_name)):
+                output_item_name = rename_duplicate(pathlib.Path(os.path.join(output_dir, output_item_name)))
             if item.is_file():
-                shutil.copy2(item, os.path.join(output_dir, item.name))
-                print("Copying: \"" + item.name + "\"")
+                shutil.copy2(item, os.path.join(output_dir, output_item_name))
+                print("Copying: \"" + output_item_name + "\"")
             elif item.is_dir(follow_symlinks=False):
                 if preservation_depth == -1 or depth < preservation_depth:
                     # RoundUp as normal
                     do_folder(item, output_dir, depth + 1, preservation_depth)
                 else:
                     # Preserve directory structure
-                    print("Preservation depth reached: Copying whole directory: \"" + item.name + "\"")
-                    shutil.copytree(item, os.path.join(output_dir, item.name))
+                    print("Preservation depth reached: Copying whole directory: \"" + output_item_name + "\"")
+                    shutil.copytree(item, os.path.join(output_dir, output_item_name))
         else:
             print("Ignoring: \"" + item.name + "\"")
 

@@ -90,6 +90,9 @@ RoundUp isn't perfect. Here are a list of some of its known quirks.
 - On Windows, folders with names starting with '.' are ignored (i.e. not copied or traversed into) because permission is always denied.
   I don't know if this is a bug or a feature with shutil.
 - Folders named "__MACOSX" are also ignored for the same reason.
+- RoundUp handles duplicate file names a bit weirdly. If a duplicate of an already-copied file is found, the duplicate will be copied as "(1)filename".
+  The next duplicate will be "(2)filename". Past (9), however, behavior is weird and untested and you will end up with names like "(1)(9)(9)filename" instead of "(20)filename".
+  When in doubt, add up the numbers, I guess. The best way to avoid this is to... not have more than 9 duplicate file names lol.
 - At a depth == 0, files named "RoundUp.py" and folders named "RoundUp_Output" are ignored for obvious reasons.
   The RoundUp script *will* get copied if it is not named "RoundUp.py".
 - RoundUp only copies. It does not move. Moving would probably require me to implement some security features to ensure your files are not accidentally lost and I am not qualified to do that.
