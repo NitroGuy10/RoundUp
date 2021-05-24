@@ -1,15 +1,16 @@
+# RoundUp by NitroGuy10
+# 23 May 2021
+
+
 import os
 import pathlib
 import shutil
 
 
-def is_unwrappable(path):  # TODO are there even any cases where this is applicable?
-    return False
-
-
 def is_ignored(path, depth):
     if path.name.startswith('.'):
-        # I don't know if this is a bug or a feature but permission is always denied for folders starting with '.'
+        # I don't know if this is a bug or a feature,
+        # but on Windows permission is always denied for folders with names starting with '.'
         return True
     elif path.name == "__MACOSX":
         return True
@@ -18,25 +19,29 @@ def is_ignored(path, depth):
     return False
 
 
-def do_folder(folder_path, output_dir, depth):
+def do_folder(folder_path, output_dir, depth, preservation_depth):
     for item in os.scandir(folder_path):
         if not is_ignored(item, depth):
-            if item.is_file() or is_unwrappable(item):
+            print("Item \"" + item.name + "\" found at depth", depth)
+            if item.is_file():
                 shutil.copy2(item, os.path.join(output_dir, item.name))
-                print("copying:", item.name)
+                print("Copying: \"" + item.name + "\"")
             elif item.is_dir(follow_symlinks=False):
-                new_dir = os.path.join(output_dir, item.name)
-                print("making new directory:", new_dir)
-                os.mkdir(new_dir)
-                do_folder(item, new_dir, depth + 1)
+                if preservation_depth == -1 or depth < preservation_depth:
+                    # RoundUp as normal
+                    do_folder(item, output_dir, depth + 1, preservation_depth)
+                else:
+                    # Preserve directory structure
+                    print("Preservation depth reached: Copying whole directory: \"" + item.name + "\"")
+                    shutil.copytree(item, os.path.join(output_dir, item.name))
 
 
 def main():
     print("Let's RoundUp!")
 
-    dir_to_roundup = pathlib.Path("C:\\Users\\naviy\\Desktop\\Programming\\RoundUp\\test_folder")
+    dir_to_roundup = pathlib.Path().absolute()
     print("We're gonna RoundUp: \"" + str(dir_to_roundup) + "\"")
-    root_output_dir = dir_to_roundup.parent.joinpath("RoundUp_Output")
+    root_output_dir = dir_to_roundup.joinpath("RoundUp_Output")
     print("Into: \"" + str(root_output_dir) + "\"\n")
 
     print("Calculating size of your RoundUp...")
@@ -62,18 +67,24 @@ def main():
         print("You're moving/copying over 1 GB of files.\n"
               "Be CERTAIN that you have chosen the correct directory.\n")
 
-    print("When you're sure you're ready, type \"RoundUp! [max_depth=-1]\" to begin. Or type exit to quit.")
+    print("When you're sure you're ready, type \"RoundUp! [preservation_depth=-1]\" to begin. Or type exit to quit.")
+    preservation_depth = -1
     while True:
         user_input = input()
         if user_input.startswith("RoundUp!"):
-            break  # TODO implement max_depth (folders beyond this depth will not be unwrapped) (-1 to unwrap all)
+            for command in user_input.split(" "):  # There is probably a better way to do this
+                if command.startswith("preservation_depth="):
+                    # preservation_depth: (folders at/beyond this depth will not be unwrapped) (0 is immediate contents)
+                    # 0 to preserve everything, -1 to unwrap all
+                    preservation_depth = int(command[19:])
+            break
         elif user_input == "exit":
             return
 
     print("Commencing RoundUp...")
-    shutil.rmtree(root_output_dir)  # TODO for testing
     os.mkdir(root_output_dir)
-    do_folder(dir_to_roundup, root_output_dir, 0)
+    do_folder(dir_to_roundup, root_output_dir, 0, preservation_depth)
+    print("All done!")
 
 
 main()
