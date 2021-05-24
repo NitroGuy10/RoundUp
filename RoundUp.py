@@ -34,14 +34,15 @@ def do_folder(folder_path, output_dir, depth, preservation_depth):
                     # Preserve directory structure
                     print("Preservation depth reached: Copying whole directory: \"" + item.name + "\"")
                     shutil.copytree(item, os.path.join(output_dir, item.name))
+        else:
+            print("Ignoring: \"" + item.name + "\"")
 
 
-def main():
+def main(dir_to_roundup):
     print("Let's RoundUp!")
 
-    dir_to_roundup = pathlib.Path().absolute()
     print("We're gonna RoundUp: \"" + str(dir_to_roundup) + "\"")
-    root_output_dir = dir_to_roundup.joinpath("RoundUp_Output")
+    root_output_dir = os.path.join(dir_to_roundup, "RoundUp_Output")
     print("Into: \"" + str(root_output_dir) + "\"\n")
 
     print("Calculating size of your RoundUp...")
@@ -68,6 +69,7 @@ def main():
               "Be CERTAIN that you have chosen the correct directory.\n")
 
     print("When you're sure you're ready, type \"RoundUp! [preservation_depth=-1]\" to begin. Or type exit to quit.")
+    print("To choose a different directory, type do_path=\"<path>\"")
     preservation_depth = -1
     while True:
         user_input = input()
@@ -78,6 +80,11 @@ def main():
                     # 0 to preserve everything, -1 to unwrap all
                     preservation_depth = int(command[19:])
             break
+        elif user_input.startswith("do_path="):
+            # Instead of the current directory, RoundUp a different path
+            print("\n\n\n")
+            main(pathlib.Path(user_input[8:].replace("\"", "")).absolute())
+            return
         elif user_input == "exit":
             return
 
@@ -87,4 +94,4 @@ def main():
     print("All done!")
 
 
-main()
+main(pathlib.Path().absolute())
