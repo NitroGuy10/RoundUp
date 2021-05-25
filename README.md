@@ -51,7 +51,7 @@ RoundUp_Output
   # RoundUp_Output is a NEW folder containing copies of the designated files.
 ```
 
-RoundUp will warn you if you attend to RoundUp an abnormally large amount of data,
+RoundUp will warn you if you attempt to RoundUp an abnormally large amount of data,
 but YOU ARE ULTIMATELY RESPONSIBLE for ensuring you don't screw up your disk or accidentally copy an absurd amount of data.
 
 If you want to RoundUp a different directory than the one RoundUp assumes you want, use do_path when prompted.
@@ -85,9 +85,9 @@ RoundUp! preservation_depth=2
 
 ## Quirks
 
-RoundUp isn't perfect. Here are a list of some of its known quirks.
+RoundUp isn't perfect. Here is a list of some of its known quirks.
 
-- On Windows, folders with names starting with '.' are ignored (i.e. not copied or traversed into) because permission is always denied.
+- On Windows, folders with names starting with '.' are ignored (i.e., not copied or traversed into) because permission is always denied.
   I don't know if this is a bug or a feature with shutil.
 - Folders named "__MACOSX" are also ignored for the same reason.
 - RoundUp handles duplicate file names a bit weirdly. If a duplicate of an already-copied file is found, the duplicate will be copied as "(1)filename".
